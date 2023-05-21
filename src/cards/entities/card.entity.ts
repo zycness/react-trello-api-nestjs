@@ -15,6 +15,6 @@ export class Card {
   @Column('text')
   description: string;
 
-  @ManyToOne(() => Lane, (lane) => lane.cards)
+  @ManyToOne(() => Lane, (lane) => lane.cards, { cascade: true, eager: true })
   lane: Lane;
 }

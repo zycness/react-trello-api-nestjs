@@ -9,7 +9,7 @@ import { UpdateCardDto } from './dto/update-card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from './entities/card.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Lane } from 'src/lanes/entities/lane.entity';
+// import { Lane } from 'src/lanes/entities/lane.entity';
 import { LanesService } from 'src/lanes/lanes.service';
 
 @Injectable()
@@ -44,8 +44,13 @@ export class CardsService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} card`;
+  async findOne(id: string) {
+    try {
+      return await this.cardRepository.findOneBy({ id });
+      // return { ...card, lane: card.lane.id };
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
   async update(id: string, updateCardDto: UpdateCardDto) {

@@ -27,8 +27,8 @@ export class CardsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cardsService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.cardsService.findOne(id);
   }
 
   @Patch(':id')
