@@ -4,6 +4,8 @@ import { LanesModule } from './lanes/lanes.module';
 import { CardsModule } from './cards/cards.module';
 import { ConfigModule } from '@nestjs/config';
 import { SeedModule } from './seed/seed.module';
+import { Card } from './cards/entities/card.entity';
+import { Lane } from './lanes/entities/lane.entity';
 
 @Module({
   imports: [
@@ -15,8 +17,8 @@ import { SeedModule } from './seed/seed.module';
       database: process.env.DB_NAME,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      autoLoadEntities: true,
-      // synchronize: true, (deleted for production)
+      entities: [Card, Lane],
+      synchronize: true,
     }),
     LanesModule,
     CardsModule,
