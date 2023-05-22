@@ -21,8 +21,10 @@ export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
   @Post()
-  async create(@Body() createCardDto: CreateCardDto) {
-    return this.cardsService.create(createCardDto);
+  async create(
+    @Body() createCardDto: CreateCardDto,
+    @Req() req) {
+    return this.cardsService.create(createCardDto, req.user);
   }
 
   @Get()
@@ -32,19 +34,20 @@ export class CardsController {
 
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.cardsService.findOne(id);
+    return this.cardsService.findOnePlain(id);
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCardDto: UpdateCardDto,
+    @Req() req
   ) {
-    return this.cardsService.update(id, updateCardDto);
+    return this.cardsService.update(id, updateCardDto, req?.user?.id);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.cardsService.remove(id);
+  remove(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
+    return this.cardsService.remove(id, req?.user?.id);
   }
 }

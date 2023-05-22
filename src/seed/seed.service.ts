@@ -14,9 +14,12 @@ export class SeedService {
   private async insertNewLanes() {
     const lanes = await this.laneServices.findAll();
 
-    if (!lanes) {
+    console.log(lanes)
+
+    if (lanes.length == 0) {
       const initialData = ['VENDO', 'COMPRO', 'ALQUILO', 'REGALO'];
 
+      console.log('lanes')
       initialData.forEach(async (laneText) => {
         await this.laneServices.create({ title: laneText });
       });

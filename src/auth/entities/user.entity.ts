@@ -1,6 +1,8 @@
+import { Card } from 'src/cards/entities/card.entity';
 import { Column, 
   CreateDateColumn, 
   Entity, ManyToOne, 
+  OneToMany, 
   PrimaryGeneratedColumn, 
   UpdateDateColumn } from 'typeorm';
 
@@ -21,6 +23,9 @@ export class User {
 
   @Column('text')
   password: string;
+
+  @OneToMany(() => Card, (card) => card.user)
+  cards?: Card[];
 
   @CreateDateColumn()
   created_at?: Date;
