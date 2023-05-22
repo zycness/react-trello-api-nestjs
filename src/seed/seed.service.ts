@@ -17,13 +17,9 @@ export class SeedService {
     if (!lanes) {
       const initialData = ['VENDO', 'COMPRO', 'ALQUILO', 'REGALO'];
 
-      let insertPromises = [];
-
-      initialData.forEach((text) => {
-        insertPromises.push(this.laneServices.create({ title: text }));
+      initialData.forEach(async (laneText) => {
+        await this.laneServices.create({ title: laneText });
       });
-
-      await Promise.all(insertPromises);
     }
 
     return true;

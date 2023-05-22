@@ -22,7 +22,7 @@ export class LanesService {
 
   async create(createLaneDto: CreateLaneDto) {
     const lane = this.laneRepository.create(createLaneDto);
-    return this.laneRepository.save(lane);
+    return await this.laneRepository.save(lane);
   }
 
   findAll() {
