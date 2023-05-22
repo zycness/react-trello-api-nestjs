@@ -12,17 +12,19 @@ export class SeedService {
   }
 
   private async insertNewLanes() {
-    await this.laneServices.deleteAllLanes();
+    const lanes = await this.laneServices.findAll();
 
-    const initialData = ['VENDO', 'COMPRO', 'ALQUILO', 'REGALO'];
+    if (!lanes) {
+      const initialData = ['VENDO', 'COMPRO', 'ALQUILO', 'REGALO'];
 
-    let insertPromises = [];
+      let insertPromises = [];
 
-    initialData.forEach((text) => {
-      insertPromises.push(this.laneServices.create({ title: text }));
-    });
+      initialData.forEach((text) => {
+        insertPromises.push(this.laneServices.create({ title: text }));
+      });
 
-    await Promise.all(insertPromises);
+      await Promise.all(insertPromises);
+    }
 
     return true;
   }
