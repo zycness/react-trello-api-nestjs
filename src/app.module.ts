@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { SeedModule } from './seed/seed.module';
 import { Card } from './cards/entities/card.entity';
 import { Lane } from './lanes/entities/lane.entity';
+import { AuthModule } from './auth/auth.module';
+import { User } from './auth/entities/user.entity';
 
 @Module({
   imports: [
@@ -17,12 +19,13 @@ import { Lane } from './lanes/entities/lane.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [Card, Lane],
+      entities: [Card, Lane, User],
       synchronize: true,
     }),
     LanesModule,
     CardsModule,
     SeedModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

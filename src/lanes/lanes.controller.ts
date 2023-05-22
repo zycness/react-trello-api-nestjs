@@ -6,12 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { LanesService } from './lanes.service';
 import { CreateLaneDto } from './dto/create-lane.dto';
 import { UpdateLaneDto } from './dto/update-lane.dto';
+import {AuthGuard} from '@nestjs/passport'
 
 @Controller('lanes')
+@UseGuards(AuthGuard())
 export class LanesController {
   constructor(private readonly lanesService: LanesService) {}
 
