@@ -17,7 +17,7 @@ export class IsAdvitersEmailValidation implements ValidatorConstraintInterface {
   constructor() {}
 
   validate(email: string): boolean {
-    return email.endsWith('@adviters.com');
+    return email != null ? email.endsWith('@adviters.com') : false
   }
   defaultMessage(args: ValidationArguments) {
     return `El email debe pertenecer a Adviters`;

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, UnauthorizedException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt/dist';
@@ -7,6 +7,8 @@ import { LoginDto } from './dto/login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Response, response } from 'express';
+import { RecoveryDto } from './dto/recovery.dto';
+import { RequestCodeDto } from './dto/requestCode.dto';
 
 @Injectable()
 export class AuthService {
@@ -48,6 +50,55 @@ export class AuthService {
     });
 
     return reponse.status(200).json({ token });
+  }
+
+  async requestSecurityCode(requestCodeDto: RequestCodeDto){
+
+    const {email} = requestCodeDto;
+
+    const user = await this.userRepository.findOneBy({email})
+    if (!user) throw new BadRequestException('El usuario no existe.')
+
+    try {
+
+      await user.sendRecoveryEmail();
+
+      return {
+        message: 'Código enviado'
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+      return new InternalServerErrorException('Ocurrió un error, intente nuevamente');
+
+    }
+
+  }
+
+  async changePassword(recoveryDto: RecoveryDto){
+
+    const {email, code, password} = recoveryDto;
+
+    const user = await this.userRepository.findOneBy({email});
+    if (!user) throw new BadRequestException('El usuario no existe.')
+
+    if (code !== user.securityCode) throw new BadRequestException('El código es incorrecto')
+    
+    const newPassword = await bcrypt.hash(password, +process.env.HASH_SALTS);
+    const newCode = user.getRandomCode();
+
+    await this.userRepository.save({
+      ...user,
+      password: newPassword,
+      securityCode: newCode
+    })
+
+    return {
+      message: 'Contraseña cambiada con éxito'
+    }
+
   }
 
   async logout(logOutUser: LoginDto, response: Response) {
