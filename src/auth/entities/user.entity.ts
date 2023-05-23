@@ -56,13 +56,13 @@ export class User {
       host: 'smtp.gmail.com',
       port: 587,
       auth: {
-        user: 'webmailsender0@gmail.com',
-        pass: 'pgovbwegrsuuxbjq'
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
       }
     }
 
     const email = {
-      from: 'webmailsender0@gmail.com',
+      from: process.env.MAIL_USER,
       to: this.email,
       subject: 'Recuperar contraseña',
       html: `¡Hola, ${this.username}!
