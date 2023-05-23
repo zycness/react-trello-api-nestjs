@@ -7,23 +7,20 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
-  UseGuards,
-  Req
+  Req,
 } from '@nestjs/common';
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
-import {AuthGuard} from '@nestjs/passport'
+import { Auth } from 'src/common/decorators/auth.decorator';
 
 @Controller('cards')
-@UseGuards(AuthGuard())
+@Auth()
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
   @Post()
-  async create(
-    @Body() createCardDto: CreateCardDto,
-    @Req() req) {
+  async create(@Body() createCardDto: CreateCardDto, @Req() req) {
     return this.cardsService.create(createCardDto, req.user);
   }
 
@@ -41,7 +38,7 @@ export class CardsController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCardDto: UpdateCardDto,
-    @Req() req
+    @Req() req,
   ) {
     return this.cardsService.update(id, updateCardDto, req?.user?.id);
   }

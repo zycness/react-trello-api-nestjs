@@ -10,39 +10,27 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CardComment } from './card-comment.entity';
+import { Card } from './card.entity';
 
 @Entity()
-export class Card {
+export class CardComment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column('text')
-  label: string;
-
-  @Column('text')
-  title: string;
-
-  @Column('text')
   description: string;
 
-  @ManyToOne(() => User, (user) => user.cards, { cascade: true, eager: true })
+  @ManyToOne(() => User, (user) => user.cards, { eager: true })
   user: User;
 
-  @ManyToOne(() => Lane, (lane) => lane.cards, { cascade: true, eager: true })
-  lane: Lane;
+  @ManyToOne(() => Lane, (lane) => lane.cards, { eager: true })
+  card: Card;
 
   @CreateDateColumn()
   created_at?: Date;
 
   @UpdateDateColumn()
   updated_at?: Date;
-
-  @Column('text', {
-    array: true,
-    nullable: true,
-  })
-  comments?: CardComment[];
 
   @Column('text', {
     nullable: true,

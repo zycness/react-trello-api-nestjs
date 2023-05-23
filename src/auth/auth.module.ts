@@ -11,7 +11,7 @@ import { Card } from 'src/cards/entities/card.entity';
 
 @Module({
   imports: [
-    PassportModule.register({defaultStrategy: 'jwt'}),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -19,15 +19,15 @@ import { Card } from 'src/cards/entities/card.entity';
         return {
           secret: config.get<string>('JWT_SECRET'),
           signOptions: {
-            expiresIn: config.get<string|number>('JWT_EXPIRES')
-          }
-        }
-      }
+            expiresIn: config.get<string | number>('JWT_EXPIRES'),
+          },
+        };
+      },
     }),
-    TypeOrmModule.forFeature([User, Card])
+    TypeOrmModule.forFeature([User, Card]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
-  exports: [JwtStrategy, PassportModule, AuthModule]
+  exports: [JwtStrategy, PassportModule, AuthModule, JwtModule],
 })
 export class AuthModule {}

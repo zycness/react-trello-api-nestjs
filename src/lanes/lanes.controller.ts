@@ -11,10 +11,10 @@ import {
 import { LanesService } from './lanes.service';
 import { CreateLaneDto } from './dto/create-lane.dto';
 import { UpdateLaneDto } from './dto/update-lane.dto';
-import {AuthGuard} from '@nestjs/passport'
+import { Auth } from 'src/common/decorators/auth.decorator';
 
 @Controller('lanes')
-@UseGuards(AuthGuard())
+@Auth()
 export class LanesController {
   constructor(private readonly lanesService: LanesService) {}
 
