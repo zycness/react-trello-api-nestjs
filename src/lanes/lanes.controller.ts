@@ -14,11 +14,11 @@ import { UpdateLaneDto } from './dto/update-lane.dto';
 import { Auth } from 'src/common/decorators/auth.decorator';
 
 @Controller('lanes')
-@Auth()
 export class LanesController {
   constructor(private readonly lanesService: LanesService) {}
 
   @Post()
+  @Auth()
   create(@Body() createLaneDto: CreateLaneDto) {
     return this.lanesService.create(createLaneDto);
   }

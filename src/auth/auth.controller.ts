@@ -1,18 +1,8 @@
-import {
-  Controller,
-  Body,
-  Post,
-  Get,
-  UseGuards,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Controller, Body, Post, Get, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/signUp.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { UserCookieGuard } from './guards/user-cookie.guard';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { RecoveryDto } from './dto/recovery.dto';
 import { RequestCodeDto } from './dto/requestCode.dto';
@@ -21,19 +11,25 @@ import { RequestCodeDto } from './dto/requestCode.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('signup')
-  signUp(@Body() signUpDto: SignUpDto): Promise<{ token: string }> {
-    return this.authService.signUp(signUpDto);
+  @Post('/signup')
+  signUp(
+    @Body() signUpDto: SignUpDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.authService.signUp(signUpDto, response);
   }
 
-  @Post('login')
-  login(@Body() loginDto: LoginDto, @Res() response: Response) {
+  @Post('/login')
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     return this.authService.login(loginDto, response);
   }
 
   @Post('requestcode')
   requestSecurityCode(@Body() requestCodeDto: RequestCodeDto){
-    this.authService.requestSecurityCode(requestCodeDto)
+    return this.authService.requestSecurityCode(requestCodeDto)
   }
 
   @Post('changepassword')
@@ -42,13 +38,19 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Body() logOut: LoginDto, @Res() response: Response) {
+  @Auth()
+  logout(
+    @Body() logOut: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     return this.authService.logout(logOut, response);
   }
 
   @Get('check-status')
-  // @Auth()
-  checkStatus(@Req() request: Request) {
-    return request.cookies;
+  @Auth()
+  checkStatus() {
+    return {
+      ok: true,
+    };
   }
 }
