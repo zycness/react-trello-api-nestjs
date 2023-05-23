@@ -7,6 +7,7 @@ import { LoginDto } from './dto/login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Response, response } from 'express';
+import { serialize } from 'cookie';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +17,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
+  async signUp(signUpDto: SignUpDto, res: Response) {
     const { username, email, password } = signUpDto;
 
     const hashedPassword = await bcrypt.hash(password, +process.env.HASH_SALTS);
@@ -29,10 +30,17 @@ export class AuthService {
 
     const token = this.getAccessToken(user.id);
 
+    res.setHeader(
+      'Set-Cookie',
+      serialize('token', token, {
+        httpOnly: true,
+        path: '/',
+      }),
+    );
     return { token };
   }
 
-  async login(loginDto: LoginDto, reponse: Response) {
+  async login(loginDto: LoginDto, res: Response) {
     const { email, password } = loginDto;
 
     const user = await this.getUser(email);
@@ -41,13 +49,14 @@ export class AuthService {
 
     const token = this.getAccessToken(user.id);
 
-    reponse.cookie('token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: true,
-    });
-
-    return reponse.status(200).json({ token });
+    res.setHeader(
+      'Set-Cookie',
+      serialize('token', token, {
+        httpOnly: true,
+        path: '/',
+      }),
+    );
+    return { token };
   }
 
   async logout(logOutUser: LoginDto, response: Response) {

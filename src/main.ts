@@ -7,11 +7,11 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors({ origin: '*' });
+  app.use(cookieParser());
+
+  app.enableCors({ origin: '*', credentials: true });
 
   app.setGlobalPrefix('api');
-
-  app.use(cookieParser());
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 

@@ -1,9 +1,9 @@
 import { UseGuards, applyDecorators } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { UserCookieGuard } from 'src/auth/guards/user-cookie.guard';
+// import { UserCookieGuard } from 'src/auth/guards/user-cookie.guard';
 
 export function Auth(...args: any) {
-  return applyDecorators(UseGuards(UserCookieGuard, AuthGuard()));
+  return applyDecorators(UseGuards(AuthGuard()));
 }
 
 // Esta es una forma de usar el applyDecorators
