@@ -9,24 +9,20 @@ import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from './entities/card.entity';
-import { DataSource, Equal, Repository } from 'typeorm';
+import { DataSource, Equal, QueryResult, Repository } from 'typeorm';
 import { LanesService } from 'src/lanes/lanes.service';
 import { User } from 'src/auth/entities/user.entity';
-import { CardComment } from './entities/card-comment.entity';
+import { CommentsService } from 'src/comments/comments.service';
+import { query } from 'express';
+import { Comment } from 'src/comments/entities/comment.entity';
 
 @Injectable()
 export class CardsService {
   constructor(
     @InjectRepository(Card)
     private readonly cardRepository: Repository<Card>,
-    @InjectRepository(CardComment)
-    private readonly commentRepository: Repository<CardComment>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    // @InjectRepository(Lane)
-    // private readonly laneRepository: Repository<Lane>,
     private readonly laneServices: LanesService,
-    private readonly dataSource: DataSource,
+    private dataSource: DataSource
   ) {}
 
   async create(createCardDto: CreateCardDto, user: User) {
@@ -43,8 +39,7 @@ export class CardsService {
   async findAll() {
     const cards = await this.cardRepository.find({
       relations: {
-        user: true,
-        comments: true,
+        user: true
       },
     });
 
@@ -69,6 +64,10 @@ export class CardsService {
     return await this.plainCard(await this.findOne(id));
   }
 
+  async getCardComments(id: string){
+    return []
+  }
+
   async findOne(id: string) {
     const card = await this.cardRepository.findOneBy({ id });
     if (!card) throw new NotFoundException(`Card with id ${id} not found`);
@@ -79,14 +78,6 @@ export class CardsService {
     let { lane, ...toUpdate } = updateCardDto;
 
     await this.findOwnOne(id, userId);
-
-    if (updateCardDto.comment.description) {
-      await this.createComment(
-        await this.cardRepository.findOneBy({ id }),
-        await this.userRepository.findOneBy({ id: userId }),
-        updateCardDto.comment.description,
-      );
-    }
 
     const card = await this.cardRepository.preload({
       id,
@@ -103,25 +94,28 @@ export class CardsService {
 
   async remove(id: string, userId: string) {
     let { card } = await this.findOwnOne(id, userId);
+
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      await this.cardRepository.remove(card);
+
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      
+      await queryRunner.manager.delete(Card, card);
+      await queryRunner.manager.delete(Comment, {cardId: card.id})
+
+      await queryRunner.commitTransaction();
+      await queryRunner.release()
+
+      return {
+        message: 'Cards and comments deleted successfuly'
+      }
+
     } catch (error) {
-      this.handleDBExceptions(error);
+      await queryRunner.rollbackTransaction();
+      return this.handleDBExceptions(error);
     }
 
-    return `Card with id #${id} was removed`;
-  }
-
-  async createComment(card: Card, user: User, description: string) {
-    const comment = {
-      card,
-      user,
-      description,
-    };
-
-    let commentCreated = this.commentRepository.create(comment);
-
-    return this.commentRepository.save(commentCreated);
   }
 
   async plainCard(card: Card) {
@@ -130,30 +124,18 @@ export class CardsService {
       created_at,
       updated_by,
       updated_at,
-      comments,
       ...rest
     } = card;
 
-    let plainComments = [];
-
-    if (comments !== null) {
-      plainComments = await this.getPlainComments(comments);
-    }
-
-    let obj = {
+    return {
       ...rest,
       lane: card.lane.title,
       user: {
         id: card.user.id,
         email: card.user.email,
         username: card.user.username,
-      },
-      comments: [...plainComments],
+      }
     };
-
-    // return obj;
-
-    return obj;
   }
 
   async findOwnOne(cardId: string, userId: string) {
@@ -166,25 +148,6 @@ export class CardsService {
     throw new UnauthorizedException(
       'No tiene permiso para actualizar este card',
     );
-  }
-
-  async getPlainComments(comments: CardComment[]) {
-    let commentsArr = [];
-
-    comments?.forEach((comment: CardComment) => {
-      let { description, id, user } = comment;
-
-      commentsArr.push({
-        description,
-        id,
-        user: {
-          id: user.id,
-          username: user.username,
-        },
-      });
-    });
-
-    return commentsArr;
   }
 
   private handleDBExceptions(error: any) {

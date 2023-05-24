@@ -1,10 +1,9 @@
-import { CardComment } from 'src/cards/entities/card-comment.entity';
+
 import { Card } from 'src/cards/entities/card.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -40,9 +39,6 @@ export class User {
 
   @OneToMany(() => Card, (card) => card.user)
   cards?: Card[];
-
-  @OneToMany(() => CardComment, (cardComment) => cardComment.user)
-  comments?: CardComment[];
 
   @CreateDateColumn()
   created_at?: Date;

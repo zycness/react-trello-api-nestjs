@@ -1,11 +1,8 @@
 import {
-  IsArray,
   IsIn,
-  IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
-import { CardComment } from '../entities/card-comment.entity';
 
 export class CreateCardDto {
   @IsString()

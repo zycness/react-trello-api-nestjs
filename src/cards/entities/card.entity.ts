@@ -2,17 +2,13 @@ import { User } from 'src/auth/entities/user.entity';
 import { Lane } from 'src/lanes/entities/lane.entity';
 import {
   BeforeInsert,
-  BeforeUpdate,
+  ManyToOne,
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CardComment } from './card-comment.entity';
-
 @Entity()
 export class Card {
   @PrimaryGeneratedColumn('uuid')
@@ -38,11 +34,6 @@ export class Card {
 
   @UpdateDateColumn()
   updated_at?: Date;
-
-  @OneToMany(() => CardComment, (cardComment) => cardComment.card, {
-    eager: true,
-  })
-  comments?: CardComment[];
 
   @Column('text', {
     nullable: true,

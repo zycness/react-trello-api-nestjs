@@ -7,14 +7,15 @@ import { Lane } from 'src/lanes/entities/lane.entity';
 import { LanesService } from 'src/lanes/lanes.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { User } from 'src/auth/entities/user.entity';
-import { CardComment } from './entities/card-comment.entity';
+import { Comment } from 'src/comments/entities/comment.entity';
+import { CommentsService } from 'src/comments/comments.service';
 
 @Module({
   controllers: [CardsController],
-  providers: [CardsService, LanesService],
+  providers: [CardsService, LanesService, CommentsService],
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([Card, CardComment, Lane, User]),
+    TypeOrmModule.forFeature([Card, Comment, Lane, User]),
   ],
   exports: [CardsModule],
 })

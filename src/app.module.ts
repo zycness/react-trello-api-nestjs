@@ -8,7 +8,8 @@ import { Card } from './cards/entities/card.entity';
 import { Lane } from './lanes/entities/lane.entity';
 import { AuthModule } from './auth/auth.module';
 import { User } from './auth/entities/user.entity';
-import { CardComment } from './cards/entities/card-comment.entity';
+import { CommentsModule } from './comments/comments.module';
+import { Comment } from './comments/entities/comment.entity';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { CardComment } from './cards/entities/card-comment.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [Card, Lane, User, CardComment],
+      entities: [Card, Lane, User, Comment],
       autoLoadEntities: true,
       synchronize: true,
     }),
@@ -28,6 +29,7 @@ import { CardComment } from './cards/entities/card-comment.entity';
     LanesModule,
     CardsModule,
     SeedModule,
+    CommentsModule,
   ],
   controllers: [],
   providers: [],
