@@ -6,20 +6,26 @@ import { Response } from 'express';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { RecoveryDto } from './dto/recovery.dto';
 import { RequestCodeDto } from './dto/requestCode.dto';
+import { ActivateDto } from './dto/activate.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('/signup')
+  @Post('signup')
   signUp(
     @Body() signUpDto: SignUpDto,
     @Res({ passthrough: true }) response: Response,
   ) {
     return this.authService.signUp(signUpDto, response);
   }
+  
+  @Post('activate')
+  activateAccount(@Body() activateDto: ActivateDto){
+    return this.authService.activateAccount(activateDto);
+  }
 
-  @Post('/login')
+  @Post('login')
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,

@@ -10,6 +10,8 @@ import { Response, response } from 'express';
 import { RequestCodeDto } from './dto/requestCode.dto';
 import { RecoveryDto } from './dto/recovery.dto';
 import { serialize } from 'cookie';
+import { ActivateDto } from './dto/activate.dto';
+import * as nodeMailer from 'nodemailer';
 
 @Injectable()
 export class AuthService {
@@ -22,24 +24,50 @@ export class AuthService {
   async signUp(signUpDto: SignUpDto, res: Response) {
     const { username, email, password } = signUpDto;
 
-    const hashedPassword = await bcrypt.hash(password, +process.env.HASH_SALTS);
+    try {
 
-    const user = await this.userRepository.save({
-      username,
-      email,
-      password: hashedPassword,
-    });
+      const hashedPassword = await bcrypt.hash(password, +process.env.HASH_SALTS);
 
-    const token = this.getAccessToken(user.id);
+      const user = await this.userRepository.save({
+        username,
+        email,
+        password: hashedPassword,
+      });
+  
+      await this.sendVerifyEmail(user);
 
-    res.setHeader(
-      'Set-Cookie',
-      serialize('token', token, {
-        httpOnly: true,
-        path: '/',
-      }),
-    );
-    return { token };
+      return { 
+        message: 'Verifique su email'
+      };
+
+    } catch (e) {
+
+      if (e.code === '23505') throw new BadRequestException('El usuario ya existe')
+
+      console.log(e);
+
+      throw new InternalServerErrorException('Ocurrió un error en el servidor')
+      
+    }
+    
+  }
+
+  async activateAccount(activateDto: ActivateDto){
+
+    const {email, code} = activateDto;
+
+    const user = await this.getUser(email);
+
+    if (code !== user.securityCode) throw new BadRequestException('El código es incorrecto')
+
+    user.activated = true;
+    user.updateSecurityCode();
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Email verificado correctamente'
+    }
+
   }
 
   async login(loginDto: LoginDto, res: Response) {
@@ -48,6 +76,8 @@ export class AuthService {
     const user = await this.getUser(email);
 
     await this.isValidPassword(password, user.password);
+
+    if (!user.activated) throw new BadRequestException('Verifique su dirección de correo electrónico')
 
     const token = this.getAccessToken(user.id);
 
@@ -65,12 +95,11 @@ export class AuthService {
 
     const {email} = requestCodeDto;
 
-    const user = await this.userRepository.findOneBy({email})
-    if (!user) throw new BadRequestException('El usuario no existe.')
+    const user = await this.getUser(email);
 
     try {
 
-      await user.sendRecoveryEmail();
+      await this.sendRecoveryEmail(user);
 
       return {
         message: 'Código enviado'
@@ -90,18 +119,16 @@ export class AuthService {
 
     const {email, code, password} = recoveryDto;
 
-    const user = await this.userRepository.findOneBy({email});
-    if (!user) throw new BadRequestException('El usuario no existe.')
+    const user = await this.getUser(email);
 
     if (code !== user.securityCode) throw new BadRequestException('El código es incorrecto')
     
     const newPassword = await bcrypt.hash(password, +process.env.HASH_SALTS);
-    const newCode = user.getRandomCode();
+    user.updateSecurityCode();
 
     await this.userRepository.save({
       ...user,
-      password: newPassword,
-      securityCode: newCode
+      password: newPassword
     })
 
     return {
@@ -128,7 +155,7 @@ export class AuthService {
 
   async getUser(email: string): Promise<User> {
     const user = await this.userRepository.findOneBy({ email });
-    if (!user) this.invalidCredentials();
+    if (!user) throw new UnauthorizedException('El usuario no existe.');
     return user;
   }
 
@@ -140,5 +167,53 @@ export class AuthService {
 
   getAccessToken(id: any): string {
     return this.jwtService.sign({ id });
+  }
+
+  async sendRecoveryEmail(user: User) {
+
+    const subject = 'Verificar email';
+
+    const html = `¡Hola, ${user.username}!
+             Gracias por registrarse en nuestro servicio. <br/>
+             Para verificar su correo electrónico utilice el siguiente código.
+             Código: <b>${user.securityCode}</b>`;
+
+    return this.sendEmail(user.email, subject, html);
+
+  }
+
+  async sendVerifyEmail(user: User) {
+
+    const subject = 'Recuperar contraseña';
+
+    const html = `¡Hola, ${user.username}!
+             Ha solicitado un código de recuperación de contraseña. <br/>
+             Ingrese el siguiente código en la ventana de recuperación.
+             Código: <b>${user.securityCode}</b>`;
+
+    return this.sendEmail(user.email, subject, html);
+
+  }
+
+  private async sendEmail(to: string, subject: string, html: string){
+    const config = {
+      host: 'smtp.gmail.com',
+      port: 587,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    };
+
+    const email = {
+      from: process.env.MAIL_USER,
+      to,
+      subject,
+      html
+    };
+
+    const transport = nodeMailer.createTransport(config);
+
+    return await transport.sendMail(email);
   }
 }
