@@ -73,6 +73,7 @@ export class CardsService {
 
   async findOne(id: string) {
     const card = await this.cardRepository.findOneBy({ id });
+    console.log('card', card)
     if (!card) throw new NotFoundException(`Card with id ${id} not found`);
     return card;
   }
@@ -104,7 +105,7 @@ export class CardsService {
       await queryRunner.connect();
       await queryRunner.startTransaction();
       
-      await queryRunner.manager.delete(Card, card);
+      await queryRunner.manager.delete(Card, {id: card.id});
       await queryRunner.manager.delete(Comment, {cardId: card.id})
 
       await queryRunner.commitTransaction();
