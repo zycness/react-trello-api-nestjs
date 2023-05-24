@@ -53,29 +53,7 @@ export class LanesService {
         },
       });
 
-      const plainCards = cards.map(card => {
-
-        const {
-          created_by,
-          updated_by,
-          ...cardRest
-        } = card;
-
-        const {
-          username,
-          email,
-          id
-        } = card.user;
-    
-        return {
-          ...cardRest,
-          user: {
-            id,
-            username,
-            email
-          }
-        }
-      })
+      const plainCards = cards.map(card => card.getPlain())
 
       lane = { ...lane, ...plainCards };
     }

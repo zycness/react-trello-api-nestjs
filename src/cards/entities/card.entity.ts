@@ -50,4 +50,24 @@ export class Card {
     this.created_by = this.user.id;
     this.updated_by = this.user.id;
   }
+
+  getPlain(){
+    return {
+      id: this.id,
+      updated_at: this.updated_at,
+      created_at: this.created_at,
+      label: this.label,
+      title: this.title,
+      description: this.description,
+      lane: {
+        id: this.lane.id,
+        title: this.lane.title
+      },
+      user: {
+        id: this.user.id,
+        username: this.user.username,
+        email: this.user.email
+      }
+    }
+  }
 }
