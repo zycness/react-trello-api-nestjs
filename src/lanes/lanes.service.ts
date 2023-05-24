@@ -53,9 +53,9 @@ export class LanesService {
         },
       });
 
-      const plainCards = cards.map(card => card.getPlain())
+      const plainCards = cards.map((card) => card.getPlain() as Card);
 
-      lane = { ...lane, ...plainCards };
+      lane = { ...lane, cards: [...plainCards] };
     }
 
     return lane;
