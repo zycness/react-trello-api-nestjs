@@ -22,7 +22,7 @@ export class CardsService {
     @InjectRepository(Card)
     private readonly cardRepository: Repository<Card>,
     private readonly laneServices: LanesService,
-    private dataSource: DataSource
+    private dataSource: DataSource,
   ) {}
 
   async create(createCardDto: CreateCardDto, user: User) {
@@ -39,7 +39,7 @@ export class CardsService {
   async findAll() {
     const cards = await this.cardRepository.find({
       relations: {
-        user: true
+        user: true,
       },
     });
 
@@ -64,8 +64,8 @@ export class CardsService {
     return await this.plainCard(await this.findOne(id));
   }
 
-  async getCardComments(id: string){
-    return []
+  async getCardComments(id: string) {
+    return [];
   }
 
   async findOne(id: string) {
@@ -87,6 +87,7 @@ export class CardsService {
       if (lane) {
         card.lane = await this.laneServices.findOne(lane);
       }
+      return await this.cardRepository.save(card);
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -97,35 +98,26 @@ export class CardsService {
 
     const queryRunner = this.dataSource.createQueryRunner();
     try {
-
       await queryRunner.connect();
       await queryRunner.startTransaction();
-      
+
       await queryRunner.manager.delete(Card, card);
-      await queryRunner.manager.delete(Comment, {cardId: card.id})
+      await queryRunner.manager.delete(Comment, { cardId: card.id });
 
       await queryRunner.commitTransaction();
-      await queryRunner.release()
+      await queryRunner.release();
 
       return {
-        message: 'Cards and comments deleted successfuly'
-      }
-
+        message: 'Cards and comments deleted successfuly',
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       return this.handleDBExceptions(error);
     }
-
   }
 
   async plainCard(card: Card) {
-    const {
-      created_by,
-      created_at,
-      updated_by,
-      updated_at,
-      ...rest
-    } = card;
+    const { created_by, updated_by, updated_at, ...rest } = card;
 
     return {
       ...rest,
@@ -134,7 +126,7 @@ export class CardsService {
         id: card.user.id,
         email: card.user.email,
         username: card.user.username,
-      }
+      },
     };
   }
 
