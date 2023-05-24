@@ -15,6 +15,7 @@ import { User } from 'src/auth/entities/user.entity';
 import { CommentsService } from 'src/comments/comments.service';
 import { query } from 'express';
 import { Comment } from 'src/comments/entities/comment.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class CardsService {
@@ -23,6 +24,7 @@ export class CardsService {
     private readonly cardRepository: Repository<Card>,
     private readonly laneServices: LanesService,
     private dataSource: DataSource,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(createCardDto: CreateCardDto, user: User) {
@@ -30,7 +32,8 @@ export class CardsService {
       const lane = await this.laneServices.findOne(createCardDto.lane);
       const card = this.cardRepository.create({ ...createCardDto, lane, user });
       await this.cardRepository.save(card);
-      return { ...createCardDto, lane: lane.title };
+      this.eventEmitter.emit('new-card', card);
+      return card.getPlain();
     } catch (error) {
       this.handleDBExceptions(error);
     }

@@ -10,6 +10,8 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './auth/entities/user.entity';
 import { CommentsModule } from './comments/comments.module';
 import { Comment } from './comments/entities/comment.entity';
+import { WebsocketsModule } from './websockets/websockets.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -25,11 +27,13 @@ import { Comment } from './comments/entities/comment.entity';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    EventEmitterModule.forRoot(),
     AuthModule,
     CardsModule,
     LanesModule,
     CommentsModule,
     SeedModule,
+    WebsocketsModule,
   ],
   controllers: [],
   providers: [],
