@@ -53,14 +53,31 @@ export class LanesService {
         },
       });
 
-      // let newArr: any = cards;
+      const plainCards = cards.map(card => {
 
-      // if (cards)
-      //   newArr = cards.map(async (card) => {
-      //     return await this.cardService.plainCard(card);
-      //   });
+        const {
+          created_by,
+          updated_by,
+          ...cardRest
+        } = card;
 
-      lane = { ...lane, ...cards };
+        const {
+          username,
+          email,
+          id
+        } = card.user;
+    
+        return {
+          ...cardRest,
+          user: {
+            id,
+            username,
+            email
+          }
+        }
+      })
+
+      lane = { ...lane, ...plainCards };
     }
 
     return lane;
