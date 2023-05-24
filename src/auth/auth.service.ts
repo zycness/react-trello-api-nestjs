@@ -42,8 +42,14 @@ export class AuthService {
 
     } catch (e) {
 
-      if (e.code === '23505') throw new BadRequestException('El usuario ya existe')
 
+      if (e.code === '23505') {
+
+        if (e.detail.includes('username')) throw new BadRequestException('El usuario ya existe')
+
+        throw new BadRequestException('El email ya está en uso')
+
+      }
       console.log(e);
 
       throw new InternalServerErrorException('Ocurrió un error en el servidor')
