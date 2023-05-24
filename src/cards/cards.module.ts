@@ -14,7 +14,7 @@ import { CardComment } from './entities/card-comment.entity';
   providers: [CardsService, LanesService],
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([Card, Lane, User, CardComment]),
+    TypeOrmModule.forFeature([Card, CardComment, Lane, User]),
   ],
   exports: [CardsModule],
 })

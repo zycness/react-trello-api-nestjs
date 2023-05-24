@@ -20,10 +20,15 @@ export class CardComment {
   @Column('text')
   description: string;
 
-  @ManyToOne(() => User, (user) => user.cards, { eager: true })
+  @ManyToOne(() => User, (user) => user.comments, {
+    cascade: true,
+    eager: true,
+  })
   user: User;
 
-  @ManyToOne(() => Lane, (lane) => lane.cards, { eager: true })
+  @ManyToOne(() => Lane, (lane) => lane.cards, {
+    cascade: true,
+  })
   card: Card;
 
   @CreateDateColumn()

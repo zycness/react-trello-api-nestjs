@@ -25,7 +25,7 @@ export class CardsController {
   }
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.cardsService.findAll();
   }
 

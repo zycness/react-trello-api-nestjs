@@ -6,10 +6,11 @@ import {
 } from '@nestjs/common';
 import { CreateLaneDto } from './dto/create-lane.dto';
 import { UpdateLaneDto } from './dto/update-lane.dto';
-import { Repository } from 'typeorm';
+import { Equal, Repository } from 'typeorm';
 import { Lane } from './entities/lane.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from 'src/cards/entities/card.entity';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class LanesService {
@@ -32,13 +33,12 @@ export class LanesService {
   async findOne(term: string) {
     let lane: Lane;
 
-    // id
-    if (!isNaN(+term)) {
-      lane = await this.laneRepository.findOneBy({ id: +term });
+    if (isUUID(term)) {
+      lane = await this.laneRepository.findOneBy({ id: term });
 
-      if (!lane)
-        throw new NotFoundException(`Lane with id or title: ${term} not found`);
+      if (!lane) throw new NotFoundException(`Lane with id ${term} not found`);
     }
+
     // title
     if (!lane) {
       lane = await this.laneRepository.findOneBy({ title: term.toUpperCase() });

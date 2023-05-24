@@ -7,6 +7,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -26,7 +27,7 @@ export class Card {
   @Column('text')
   description: string;
 
-  @ManyToOne(() => User, (user) => user.cards, { cascade: true, eager: true })
+  @ManyToOne(() => User, (user) => user.cards, { cascade: true })
   user: User;
 
   @ManyToOne(() => Lane, (lane) => lane.cards, { cascade: true, eager: true })
@@ -38,9 +39,8 @@ export class Card {
   @UpdateDateColumn()
   updated_at?: Date;
 
-  @Column('text', {
-    array: true,
-    nullable: true,
+  @OneToMany(() => CardComment, (cardComment) => cardComment.card, {
+    eager: true,
   })
   comments?: CardComment[];
 
@@ -57,10 +57,6 @@ export class Card {
   @BeforeInsert()
   setAuditData() {
     this.created_by = this.user.id;
-  }
-
-  @BeforeUpdate()
-  setUpdateData() {
     this.updated_by = this.user.id;
   }
 }

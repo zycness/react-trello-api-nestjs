@@ -1,6 +1,6 @@
 import { CardComment } from 'src/cards/entities/card-comment.entity';
 import { Card } from 'src/cards/entities/card.entity';
-import * as nodeMailer from 'nodemailer'
+import * as nodeMailer from 'nodemailer';
 import {
   Column,
   CreateDateColumn,
@@ -30,14 +30,14 @@ export class User {
   password: string;
 
   @Column('int', {
-    default: Math.floor((Math.random() * 899999) + 100000)
+    default: Math.floor(Math.random() * 899999 + 100000),
   })
-  securityCode: number
+  securityCode: number;
 
   @OneToMany(() => Card, (card) => card.user)
   cards?: Card[];
 
-  @OneToMany(() => CardComment, (cardComment) => cardComment.card)
+  @OneToMany(() => CardComment, (cardComment) => cardComment.user)
   comments?: CardComment[];
 
   @CreateDateColumn()
@@ -46,20 +46,19 @@ export class User {
   @UpdateDateColumn()
   updated_at?: Date;
 
-  getRandomCode(){
-    return Math.floor((Math.random() * 899999) + 100000);
+  getRandomCode() {
+    return Math.floor(Math.random() * 899999 + 100000);
   }
 
-  async sendRecoveryEmail(){
-
+  async sendRecoveryEmail() {
     const config = {
       host: 'smtp.gmail.com',
       port: 587,
       auth: {
         user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
-      }
-    }
+        pass: process.env.MAIL_PASS,
+      },
+    };
 
     const email = {
       from: process.env.MAIL_USER,
@@ -68,12 +67,11 @@ export class User {
       html: `¡Hola, ${this.username}!
              Ha solicitado un código de recuperación de contraseña. <br/>
              Ingrese el siguiente código en la ventana de recuperación.
-             Código: <b>${this.securityCode}</b>`
-    }
+             Código: <b>${this.securityCode}</b>`,
+    };
 
     const transport = nodeMailer.createTransport(config);
 
     return await transport.sendMail(email);
-
   }
 }

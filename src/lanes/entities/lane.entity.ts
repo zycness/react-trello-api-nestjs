@@ -9,8 +9,8 @@ import {
 
 @Entity()
 export class Lane {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column('text', { unique: true })
   title: string;
