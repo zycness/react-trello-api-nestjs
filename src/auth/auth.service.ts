@@ -52,22 +52,21 @@ export class AuthService {
     
   }
 
-  async activateAccount(activateDto: ActivateDto){
+  async activateAccount(activateDto: ActivateDto, res: Response){
 
     const {email, code} = activateDto;
 
     const user = await this.getUser(email);
 
-    if (code !== user.securityCode) throw new BadRequestException('El código es incorrecto')
+    if (code !== user.securityCode) return res.status(401).json({
+      message: 'Ocurrió un error de validación'
+    })
 
     user.activated = true;
     user.updateSecurityCode();
     await this.userRepository.save(user);
 
-    return {
-      message: 'Email verificado correctamente'
-    }
-
+    return res.status(200).redirect('/login')
   }
 
   async login(loginDto: LoginDto, res: Response) {
@@ -169,20 +168,20 @@ export class AuthService {
     return this.jwtService.sign({ id });
   }
 
-  async sendRecoveryEmail(user: User) {
+  async sendVerifyEmail(user: User) {
 
     const subject = 'Verificar email';
 
     const html = `¡Hola, ${user.username}!
              Gracias por registrarse en nuestro servicio. <br/>
-             Para verificar su correo electrónico utilice el siguiente código.
-             Código: <b>${user.securityCode}</b>`;
+             Verifique su correo electrónico para comenzara utilizar su cuenta.
+             <a href="${process.env.SERVER_ADRESS}/api/auth/activate?email=${user.email}&code=${user.securityCode}">Verificar mi email</a>`;
 
     return this.sendEmail(user.email, subject, html);
 
   }
 
-  async sendVerifyEmail(user: User) {
+  async sendRecoveryEmail(user: User) {
 
     const subject = 'Recuperar contraseña';
 
