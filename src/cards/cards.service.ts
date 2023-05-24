@@ -15,7 +15,7 @@ import { User } from 'src/auth/entities/user.entity';
 import { CommentsService } from 'src/comments/comments.service';
 import { query } from 'express';
 import { Comment } from 'src/comments/entities/comment.entity';
-import {EventEmitter2} from '@nestjs/event-emitter'
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class CardsService {
@@ -24,7 +24,7 @@ export class CardsService {
     private readonly cardRepository: Repository<Card>,
     private readonly laneServices: LanesService,
     private dataSource: DataSource,
-    private eventEmitter: EventEmitter2
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(createCardDto: CreateCardDto, user: User) {
@@ -32,7 +32,7 @@ export class CardsService {
       const lane = await this.laneServices.findOne(createCardDto.lane);
       const card = this.cardRepository.create({ ...createCardDto, lane, user });
       await this.cardRepository.save(card);
-      this.eventEmitter.emit('new-card', card)
+      this.eventEmitter.emit('new-card', card);
       return card.getPlain();
     } catch (error) {
       this.handleDBExceptions(error);
@@ -42,7 +42,7 @@ export class CardsService {
   async findAll() {
     const cards = await this.cardRepository.find({
       relations: {
-        user: true
+        user: true,
       },
     });
 
@@ -67,8 +67,8 @@ export class CardsService {
     return await this.plainCard(await this.findOne(id));
   }
 
-  async getCardComments(id: string){
-    return []
+  async getCardComments(id: string) {
+    return [];
   }
 
   async findOne(id: string) {
@@ -91,6 +91,7 @@ export class CardsService {
       if (lane) {
         card.lane = await this.laneServices.findOne(lane);
       }
+      return await this.cardRepository.save(card);
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -101,7 +102,6 @@ export class CardsService {
 
     const queryRunner = this.dataSource.createQueryRunner();
     try {
-
       await queryRunner.connect();
       await queryRunner.startTransaction();
       
@@ -109,27 +109,19 @@ export class CardsService {
       await queryRunner.manager.delete(Comment, {cardId: card.id})
 
       await queryRunner.commitTransaction();
-      await queryRunner.release()
+      await queryRunner.release();
 
       return {
-        message: 'Cards and comments deleted successfuly'
-      }
-
+        message: 'Cards and comments deleted successfuly',
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       return this.handleDBExceptions(error);
     }
-
   }
 
   async plainCard(card: Card) {
-    const {
-      created_by,
-      created_at,
-      updated_by,
-      updated_at,
-      ...rest
-    } = card;
+    const { created_by, updated_by, updated_at, ...rest } = card;
 
     return {
       ...rest,
@@ -138,7 +130,7 @@ export class CardsService {
         id: card.user.id,
         email: card.user.email,
         username: card.user.username,
-      }
+      },
     };
   }
 

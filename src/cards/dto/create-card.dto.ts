@@ -1,8 +1,4 @@
-import {
-  IsIn,
-  IsString,
-  MinLength,
-} from 'class-validator';
+import { IsIn, IsString, MinLength } from 'class-validator';
 
 export class CreateCardDto {
   @IsString()
@@ -19,6 +15,5 @@ export class CreateCardDto {
 
   @IsString()
   @MinLength(1)
-  @IsIn(['VENDO', 'COMPRO', 'ALQUILO', 'REGALO', '1', '2', '3', '4'])
   lane: string;
 }
