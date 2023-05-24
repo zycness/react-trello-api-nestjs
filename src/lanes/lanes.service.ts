@@ -53,7 +53,14 @@ export class LanesService {
         },
       });
 
-      lane = { ...lane, cards };
+      // let newArr: any = cards;
+
+      // if (cards)
+      //   newArr = cards.map(async (card) => {
+      //     return await this.cardService.plainCard(card);
+      //   });
+
+      lane = { ...lane, ...cards };
     }
 
     return lane;
