@@ -54,9 +54,16 @@ export class AuthController {
 
   @Get('check-status')
   @Auth()
-  checkStatus() {
-    return {
-      ok: true,
-    };
+  checkStatus(@Req() req) {
+    const {
+      created_at,
+      updated_at,
+      password,
+      securityCode,
+      activated,
+      ...rest
+    } = req.user;
+
+    return {...rest}
   }
 }
