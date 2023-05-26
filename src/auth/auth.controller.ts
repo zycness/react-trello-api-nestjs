@@ -46,10 +46,9 @@ export class AuthController {
   @Post('logout')
   @Auth()
   logout(
-    @Body() logOut: LoginDto,
-    @Res({ passthrough: true }) response: Response,
+    @Res() res: Response,
   ) {
-    return this.authService.logout(logOut, response);
+    return res.clearCookie('token').sendStatus(200);
   }
 
   @Get('check-status')

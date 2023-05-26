@@ -81,17 +81,39 @@ export class CardsService {
   async update(id: string, updateCardDto: UpdateCardDto, userId: string) {
     let { lane, ...toUpdate } = updateCardDto;
 
-    await this.findOwnOne(id, userId);
+    const {card} = await this.findOwnOne(id, userId);
 
-    const card = await this.cardRepository.preload({
-      id,
-      ...toUpdate,
+    let moved;
+
+    const preload = await this.cardRepository.preload({
+      ...card,
+      ...toUpdate
     });
+
     try {
       if (lane) {
-        card.lane = await this.laneServices.findOne(lane);
+        preload.lane = await this.laneServices.findOne(lane);
       }
-      return await this.cardRepository.save(card);
+      await this.cardRepository.save(preload);
+      
+
+      if (card.lane.id !== preload.lane.id) {
+
+        moved = {
+          fromId: card.lane.id,
+          from: card.lane.title,
+          toId: preload.lane.id,
+          to: preload.lane.title,
+          userId: card.user.id,
+          username: card.user.username,
+          cardId: card.id
+        }
+
+        this.eventEmitter.emit('move-card', moved)
+
+      } else this.eventEmitter.emit('update-card', preload);
+
+      return preload.getPlain();
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -110,6 +132,8 @@ export class CardsService {
 
       await queryRunner.commitTransaction();
       await queryRunner.release();
+
+      this.eventEmitter.emit('delete-card', card);
 
       return {
         message: 'Cards and comments deleted successfuly',

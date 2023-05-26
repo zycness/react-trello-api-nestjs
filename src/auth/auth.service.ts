@@ -72,7 +72,7 @@ export class AuthService {
     user.updateSecurityCode();
     await this.userRepository.save(user);
 
-    return res.status(200).redirect('/login')
+    return res.status(200).redirect('/?activated=true')
   }
 
   async login(loginDto: LoginDto, res: Response) {
@@ -140,18 +140,6 @@ export class AuthService {
       message: 'Contraseña cambiada con éxito'
     }
 
-  }
-
-  async logout(logOutUser: LoginDto, response: Response) {
-    const { email, password } = logOutUser;
-
-    const user = await this.getUser(email);
-
-    await this.isValidPassword(password, user.password);
-
-    response.clearCookie('token');
-
-    return 'Logout successful';
   }
 
   invalidCredentials() {
