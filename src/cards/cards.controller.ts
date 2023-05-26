@@ -8,6 +8,7 @@ import {
   Delete,
   ParseUUIDPipe,
   Req,
+  Query,
 } from '@nestjs/common';
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
@@ -21,8 +22,8 @@ import { CommentsService } from 'src/comments/comments.service';
 export class CardsController {
   constructor(
     private readonly cardsService: CardsService,
-    private readonly commentsService: CommentsService) 
-    {}
+    private readonly commentsService: CommentsService,
+  ) {}
 
   @Post()
   async create(@Body() createCardDto: CreateCardDto, @Req() req) {
@@ -31,9 +32,10 @@ export class CardsController {
 
   @Post(':id/comments')
   async createComment(
-      @Param('id', ParseUUIDPipe) cardId: string,
-      @Body() createCommentDto: CreateCommentDto){
-    return this.commentsService.createComment(cardId, createCommentDto)
+    @Param('id', ParseUUIDPipe) cardId: string,
+    @Body() createCommentDto: CreateCommentDto,
+  ) {
+    return this.commentsService.createComment(cardId, createCommentDto);
   }
 
   @Get()
@@ -42,8 +44,11 @@ export class CardsController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.cardsService.findOnePlain(id);
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('q') queryCard: string,
+  ) {
+    return this.cardsService.findOnePlain(id, queryCard);
   }
 
   @Get(':id/comments')

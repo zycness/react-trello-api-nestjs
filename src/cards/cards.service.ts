@@ -9,7 +9,7 @@ import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from './entities/card.entity';
-import { DataSource, Equal, QueryResult, Repository } from 'typeorm';
+import { DataSource, Equal, ILike, QueryResult, Repository } from 'typeorm';
 import { LanesService } from 'src/lanes/lanes.service';
 import { User } from 'src/auth/entities/user.entity';
 import { CommentsService } from 'src/comments/comments.service';
@@ -63,7 +63,27 @@ export class CardsService {
     return arr;
   }
 
-  async findOnePlain(id: string) {
+  async findOnePlain(id: string, queryCard: string) {
+    if (queryCard && queryCard?.length > 0) {
+      let res = await this.cardRepository.find({
+        where: {
+          title: ILike(`%${queryCard}%`),
+        },
+      });
+
+      if (res && res?.length > 0) {
+        let arr = [];
+
+        res.forEach(async (card) => {
+          console.log(card);
+          let plainCardObj = await this.plainCard(card);
+          arr.push(plainCardObj);
+        });
+        return arr;
+      }
+      return res;
+    }
+
     return await this.plainCard(await this.findOne(id));
   }
 
@@ -73,7 +93,7 @@ export class CardsService {
 
   async findOne(id: string) {
     const card = await this.cardRepository.findOneBy({ id });
-    console.log('card', card)
+    console.log('card', card);
     if (!card) throw new NotFoundException(`Card with id ${id} not found`);
     return card;
   }
@@ -81,13 +101,13 @@ export class CardsService {
   async update(id: string, updateCardDto: UpdateCardDto, userId: string) {
     let { lane, ...toUpdate } = updateCardDto;
 
-    const {card} = await this.findOwnOne(id, userId);
+    const { card } = await this.findOwnOne(id, userId);
 
     let moved;
 
     const preload = await this.cardRepository.preload({
       ...card,
-      ...toUpdate
+      ...toUpdate,
     });
 
     try {
@@ -95,10 +115,8 @@ export class CardsService {
         preload.lane = await this.laneServices.findOne(lane);
       }
       await this.cardRepository.save(preload);
-      
 
       if (card.lane.id !== preload.lane.id) {
-
         moved = {
           fromId: card.lane.id,
           from: card.lane.title,
@@ -106,11 +124,10 @@ export class CardsService {
           to: preload.lane.title,
           userId: card.user.id,
           username: card.user.username,
-          cardId: card.id
-        }
+          cardId: card.id,
+        };
 
-        this.eventEmitter.emit('move-card', moved)
-
+        this.eventEmitter.emit('move-card', moved);
       } else this.eventEmitter.emit('update-card', preload);
 
       return preload.getPlain();
@@ -126,9 +143,9 @@ export class CardsService {
     try {
       await queryRunner.connect();
       await queryRunner.startTransaction();
-      
-      await queryRunner.manager.delete(Card, {id: card.id});
-      await queryRunner.manager.delete(Comment, {cardId: card.id})
+
+      await queryRunner.manager.delete(Card, { id: card.id });
+      await queryRunner.manager.delete(Comment, { cardId: card.id });
 
       await queryRunner.commitTransaction();
       await queryRunner.release();
