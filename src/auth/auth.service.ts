@@ -178,10 +178,12 @@ export class AuthService {
 
     const subject = 'Verificar email';
 
+    const link = `${process.env.SERVER_ADRESS}/api/auth/activate?email=${user.email}&code=${user.securityCode}`
+
     const html = `¡Hola, ${user.username}!
-             Gracias por registrarse en nuestro servicio. <br/>
-             Verifique su correo electrónico para comenzara utilizar su cuenta.
-             <a href="${process.env.SERVER_ADRESS}/api/auth/activate?email=${user.email}&code=${user.securityCode}">Verificar mi email</a>`;
+             Bienvenido. <br/>
+             Utilice el siguiente enlace para verificar su email.
+             <a href="${link}">${link}</a>`;
 
     return this.sendEmail(user.email, subject, html);
 
