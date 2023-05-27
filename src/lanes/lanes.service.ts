@@ -31,7 +31,7 @@ export class LanesService {
   }
 
   async findOne(term: string) {
-    let lane: Lane;
+    let lane;
 
     if (isUUID(term)) {
       lane = await this.laneRepository.findOneBy({ id: term });
@@ -53,7 +53,7 @@ export class LanesService {
         },
       });
 
-      const plainCards = cards.map((card) => card.getPlain() as Card);
+      const plainCards = cards.map((card) => card.getPlain());
 
       lane = { ...lane, cards: [...plainCards] };
     }

@@ -12,8 +12,6 @@ import { Card } from './entities/card.entity';
 import { DataSource, Equal, ILike, QueryResult, Repository } from 'typeorm';
 import { LanesService } from 'src/lanes/lanes.service';
 import { User } from 'src/auth/entities/user.entity';
-import { CommentsService } from 'src/comments/comments.service';
-import { query } from 'express';
 import { Comment } from 'src/comments/entities/comment.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -55,7 +53,7 @@ export class CardsService {
 
     cards.forEach(async (card) => {
       console.log(card);
-      let plainCardObj = await this.plainCard(card);
+      let plainCardObj = await card.getPlain();
       arr.push(plainCardObj);
     });
 
@@ -76,7 +74,7 @@ export class CardsService {
 
         res.forEach(async (card) => {
           console.log(card);
-          let plainCardObj = await this.plainCard(card);
+          let plainCardObj = card.getPlain();
           arr.push(plainCardObj);
         });
         return arr;
@@ -84,7 +82,8 @@ export class CardsService {
       return res;
     }
 
-    return await this.plainCard(await this.findOne(id));
+    const card =  await this.findOne(id);
+    return card.getPlain()
   }
 
   async getCardComments(id: string) {
@@ -159,20 +158,6 @@ export class CardsService {
       await queryRunner.rollbackTransaction();
       return this.handleDBExceptions(error);
     }
-  }
-
-  async plainCard(card: Card) {
-    const { created_by, updated_by, updated_at, ...rest } = card;
-
-    return {
-      ...rest,
-      lane: card.lane.title,
-      user: {
-        id: card.user.id,
-        email: card.user.email,
-        username: card.user.username,
-      },
-    };
   }
 
   async findOwnOne(cardId: string, userId: string) {

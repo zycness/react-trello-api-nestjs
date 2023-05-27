@@ -20,7 +20,8 @@ export class CommentsService {
   }
 
   async getCardComments(cardId: string) {
-    return this.commentsRepository.findBy({cardId});
+    const comment = await this.commentsRepository.findBy({cardId})
+    return comment.map(comment => ({...comment, dateString: comment.getDateMessage()}));
   }
 
   async deleteComment(id: string) {
