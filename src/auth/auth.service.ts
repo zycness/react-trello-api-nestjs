@@ -72,7 +72,7 @@ export class AuthService {
     user.updateSecurityCode();
     await this.userRepository.save(user);
 
-    return res.status(200).redirect('/?activated=true')
+    return res.status(200).redirect(process.env.FRONT_ORIGIN + '/?activated=true')
   }
 
   async login(loginDto: LoginDto, res: Response) {
